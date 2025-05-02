@@ -10,7 +10,7 @@ class Detective:
 
         self.__lvl = self._gen_primes(limit)
         # print(self.__primes)
-        print(self.__lvl)
+        print('Lvl:', self.__lvl)
 
         pass
 
@@ -38,5 +38,24 @@ class Detective:
 
         return len(primes)
 
-    def detect(self):
-        pass
+    def detect(self, message) -> tuple:
+        # define segment hash supersets, self.__lvl in size
+        self.__segmentset = []
+
+        for segmentCount in range(0, self.__lvl):
+            segments = []
+            width = len(message) // self.__primes[segmentCount]
+            
+            for idx in range(0, self.__primes[segmentCount]):
+                segmentHash = hash(message[idx : idx + width])
+                segments.append(segmentHash)
+            
+            self.__segmentset.append(segments)
+        
+        return self.__segmentset
+
+
+message = "this is a secret"
+gadget = Detective(len(message))
+
+print(gadget.detect(message))
