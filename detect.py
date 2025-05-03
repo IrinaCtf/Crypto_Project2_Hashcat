@@ -65,6 +65,9 @@ class Detective:
         self.__segmentset = []
 
         for segmentCount in range(0, self.__lvl):
+            if segmentCount > len(message):
+                return self.__segmentset
+
             segments = []
             width = len(message) // self.__primes[segmentCount]
             
@@ -86,29 +89,40 @@ class Detective:
         """
         set_index = 0
 
+        checkSuperset = []
+
         for segmentCount in range(0, self.__lvl):
+            if segmentCount > len(suspect):
+                return checkSuperset
+                
             width = len(suspect) // self.__primes[segmentCount]
             
             segment_index = 0
 
+            checkSet = []
+
             for idx in range(0, self.__primes[segmentCount]):
                 segmentHash = self.__hash(suspect[idx : idx + width])
-                # print(segmentHash)
 
-                if segmentHash != self.__segmentset[set_index][segment_index]:
-                    return (set_index, segment_index)
+                checkSet.append(segmentHash == self.__segmentset[set_index][segment_index])
+                
+                # if segmentHash != self.__segmentset[set_index][segment_index]:
+                #     return (set_index, segment_index)
                 
                 segment_index += 1
             
+            checkSuperset.append(checkSet)
+            
             set_index += 1
         
-        return (-1, -1)
+        return checkSuperset
+        # return (-1, -1)
         
 
 
 message = "this is a secret"
 corrupted = "this is b secret"
-gadget = Detective(len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
+gadget = Detective(2 * len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
 
 print(gadget.remember(message))
 
