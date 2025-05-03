@@ -1,16 +1,29 @@
-import math
+import hashlib as hl
 
 class Detective:
         
-    def __init__(self, limit:int):
+    def __init__(self, limit:int, hashFunc):
         """
         limit: determines the number upto which primes are generated
+        hashFunc: a hard predicate that takes encoded strings as input and throws a hex hash digest out
         """
-        assert(limit > 0)
+        try:
+            assert(limit > 0)
+        except:
+            print(f"ERR: limit {limit} is non-positive!")
+            exit(1)
+        
+        try:
+            assert(hashFunc("hashable") != None)
+        except:
+            print(f"ERR: hash function compuation failure!")
+            exit(1)
 
         self.__lvl = self._gen_primes(limit)
+        self.__hash = hashFunc
+
         # print(self.__primes)
-        print('Lvl:', self.__lvl)
+        # print('Lvl:', self.__lvl)
 
         pass
 
@@ -47,7 +60,7 @@ class Detective:
             width = len(message) // self.__primes[segmentCount]
             
             for idx in range(0, self.__primes[segmentCount]):
-                segmentHash = hash(message[idx : idx + width])
+                segmentHash = self.__hash(message[idx : idx + width])
                 segments.append(segmentHash)
             
             self.__segmentset.append(segments)
@@ -55,7 +68,8 @@ class Detective:
         return self.__segmentset
 
 
+
 message = "this is a secret"
-gadget = Detective(len(message))
+gadget = Detective(len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
 
 print(gadget.detect(message))
