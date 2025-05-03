@@ -51,7 +51,16 @@ class Detective:
 
         return len(primes)
 
-    def detect(self, message) -> tuple:
+    def remember(self, message:str) -> tuple:
+        """
+        INPUT: message, type str
+        OUTPUT: segment superset, tuple (set of hash sets)
+        
+        Creates a segment superset and stores it internally.
+        Pair this with the inspect method to detect corruptions
+
+        Returns [] if level is too low
+        """
         # define segment hash supersets, self.__lvl in size
         self.__segmentset = []
 
@@ -66,10 +75,41 @@ class Detective:
             self.__segmentset.append(segments)
         
         return self.__segmentset
+    
+    def inspect(self, suspect:str) -> tuple:
+        """
+        INPUT: suspect, type str
+        OUTPUT: returns a pair of indicies (set index, segment index), where corruption occurs
 
+        Compares stored hash superset with the superset of said suspect.
+        Returns (-1, -1) if no corruption detected.
+        """
+        set_index = 0
+
+        for segmentCount in range(0, self.__lvl):
+            width = len(suspect) // self.__primes[segmentCount]
+            
+            segment_index = 0
+
+            for idx in range(0, self.__primes[segmentCount]):
+                segmentHash = self.__hash(suspect[idx : idx + width])
+                # print(segmentHash)
+
+                if segmentHash != self.__segmentset[set_index][segment_index]:
+                    return (set_index, segment_index)
+                
+                segment_index += 1
+            
+            set_index += 1
+        
+        return (-1, -1)
+        
 
 
 message = "this is a secret"
+corrupted = "this is b secret"
 gadget = Detective(len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
 
-print(gadget.detect(message))
+print(gadget.remember(message))
+
+print(gadget.inspect(corrupted))
