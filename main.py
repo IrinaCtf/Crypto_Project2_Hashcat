@@ -1,28 +1,44 @@
-from detect import Detector
-from localize import *
+# main.py
+import hashlib as hl
+from detect import Detective
 
-def corruptHashDetect():
+def main():
+    # Step 1: Open test file and read content
+    with open("test.txt", "r") as file:
+        lines = file.readlines()
+        if len(lines) < 2:
+            print("Test file must have at least two lines: original and corrupted message.")
+            return
+        original_message = lines[0].strip()
+        corrupted_message = lines[1].strip()[:len(original_message)]
     '''
-    INPUT: hash, hash
-    OUTPUT: corrupt hash indicies
-
-    We send the hash of OG msg and received msg and compare the hashes
-    any hash that is not EXACTLY the same is corrupt and gets sent to localization
+    Are we handling the length difference the way above? Just abandon the longer part???
     '''
-    return 0
 
-def localization():
-    '''
-    INPUT: corrupt hash indicies
-    OUTPUT: lower and upper bounds
+    # Step 2: Create Detective instance
+    limit = 2 * len(original_message)
+    hash_func = lambda x: hl.md5(x.encode('ascii')).hexdigest()
+    agent = Detective(limit, hash_func)
 
-    This is to narrow down the exact start and end index of the corruption
-    We use binary search to first find the corruption in general
-    options to narrow it down further
-    - binary search again but we factor in the expected length of the corruption
-    so you could instead of checking in halves based on the lenght of the hash
-    we now check based on halves of the corruption length
-    - check each adjacent bit/index and compare w og hash and keep going until we get to the start or end
-    '''
-    return 0
+    # Step 3: Get superset hashes
 
+    original_superset = agent.superSet(original_message)
+    corrupted_superset = agent.superSet(corrupted_message)
+
+    # Step 4: Get list of primes
+    prime_list = agent.primes()
+
+    # Step 5: Print results
+    print("Original Superset Hashes:")
+    for segment in original_superset:
+        print(segment)
+
+    print("\nCorrupted Superset Hashes:")
+    for segment in corrupted_superset:
+        print(segment)
+
+    print("\nList of Primes:")
+    print(prime_list)
+
+if __name__ == "__main__":
+    main()

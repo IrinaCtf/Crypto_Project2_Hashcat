@@ -49,6 +49,9 @@ class Detective:
         self.__primes = primes
 
         return len(primes)
+    
+    def primes(self) -> tuple:
+        return self.__primes
 
     def superSet(self, message:str) -> tuple:
         """
