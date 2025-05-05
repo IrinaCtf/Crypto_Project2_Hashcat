@@ -1,3 +1,4 @@
+import math as mt
 import hashlib as hl
 
 class Detective:
@@ -37,7 +38,7 @@ class Detective:
         
         primes = [ 2 ]
 
-        for number in range(3, limit + 1):
+        for number in range(3, int(mt.sqrt(limit)) + 1):
             isPrime = True
             for prime in primes:
                 if number % prime == 0:
@@ -70,7 +71,7 @@ class Detective:
             segments = []
             width = len(message) // self.__primes[segmentCount]
             
-            for idx in range(0, self.__primes[segmentCount]):
+            for idx in range(0, len(message), width):
                 segmentHash = self.__hash(message[idx : idx + width])
                 segments.append(segmentHash)
             
@@ -113,7 +114,7 @@ class Detective:
 
             checkSet = []
 
-            for idx in range(0, self.__primes[segmentCount]):
+            for idx in range(0, len(suspect), width):
                 segmentHash = self.__hash(suspect[idx : idx + width])
 
                 checkSet.append(segmentHash == self.__segmentset[set_index][segment_index])
@@ -134,8 +135,9 @@ class Detective:
 
 message = "this is a secret"
 corrupted = "this is b secret"
-gadget = Detective(2 * len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
+gadget = Detective(len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
 
 print(gadget.remember(message))
+print(gadget.superSet(corrupted))
 
 print(gadget.inspect(corrupted))
