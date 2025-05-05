@@ -1,5 +1,7 @@
 import math as mt
 import hashlib as hl
+import random as rnd
+from string import ascii_letters as ascii_set
 
 class Detective:
         
@@ -32,7 +34,7 @@ class Detective:
         upto the limit, collects all primes. Returns number of primes, pi(x)
         Uses Sieve of Eratosthenes
         """
-        if limit < 2:
+        if limit < 4:
             self.__primes = []
             return 0
         
@@ -131,11 +133,35 @@ class Detective:
         return checkSuperset
         # return (-1, -1)
         
+def randCorruptSeq(message:str, length:int) -> { str, tuple }:
+    """
+    INPUT: message; string to be corrupted, str
+           length; length of corruption sequence, int
 
+    OUTPUT: corrupted string, str
+            corruption index range (pair), tuple
+    
+    Corrupts a given string given fixed corruption length sequentially.
+    Returns the corrupted string and the location (in indicies) of said corruption [start index, end index]
+    """
+    if length > len(message):
+        return message, (-1, -1)
 
-message = "this is a secret"
-corrupted = "this is b secret"
+    start = rnd.randint(0, len(message) - length)
+
+    previous = message[:start]
+    next = message[start + length:]
+    corruption = ''.join(rnd.choice(ascii_set) for _ in range(length))
+
+    return previous + corruption + next, (start, start + length - 1)
+
+message =   "I have a lot of characters fitting in here, can you find the error?"
+corrupted, target = randCorruptSeq(message, 8)
+
+print(f'Error at {target}')
+
 gadget = Detective(len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
+# gadget = Detective(len(message), lambda x: x)
 
 print(gadget.remember(message))
 print(gadget.superSet(corrupted))
