@@ -10,10 +10,8 @@ def main():
             print("Test file must have at least two lines: original and corrupted message.")
             return
         original_message = lines[0].strip()
+        # i must be within the range of [0, L], so we can abondon [L, L']
         corrupted_message = lines[1].strip()[:len(original_message)]
-    '''
-    Are we handling the length difference the way above? Just abandon the longer part???
-    '''
 
     # Step 2: Create Detective instance
     limit = 2 * len(original_message)
