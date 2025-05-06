@@ -1,6 +1,7 @@
 # main.py
 import hashlib as hl
 from detect import Detective
+from localize import localize, binary_search 
 
 def main():
     # Step 1: Open test file and read content
@@ -17,12 +18,14 @@ def main():
 
     # Step 2: Create Detective instance
     limit = 2 * len(original_message)
-    hash_func = lambda x: hl.md5(x.encode('ascii')).hexdigest()
+    hash_func = lambda x:x  #lambda x: hl.md5(x.encode('ascii')).hexdigest()
     agent = Detective(limit, hash_func)
 
     # Step 3: Get superset hashes
 
     original_superset = agent.superSet(original_message)
+
+    #TO DO: to localize function in localize.py once done
     corrupted_superset = agent.superSet(corrupted_message)
 
     # Step 4: Get list of primes
@@ -39,6 +42,9 @@ def main():
 
     print("\nList of Primes:")
     print(prime_list)
+    print("CASE 1")
+    ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe110", 0)
+    print(localize(ogHash, cHash, start_index))
 
 if __name__ == "__main__":
     main()
