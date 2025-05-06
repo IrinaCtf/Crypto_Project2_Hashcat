@@ -18,7 +18,7 @@ def binary_search(ogHash, cHash, mid):
         # be present in left subarray or the latter half
         elif ogHash[mid] == cHash[mid]:
             print(ogHash +" "+ cHash)
-            return binary_search(ogHash[mid+1:], cHash[mid+1:], mid)
+            return binary_search(ogHash[mid+1:], cHash[mid+1:], mid+1)
 
     else:
         # Everything is equal
@@ -26,7 +26,7 @@ def binary_search(ogHash, cHash, mid):
         return (ogHash,cHash,0)
 
 
-def localize(ogHash, cHash, start_index, diff):
+def localize(ogHash, cHash, start_index):
 
     corrupt_len = len(cHash)
     checked = 1
@@ -77,17 +77,17 @@ def localize(ogHash, cHash, start_index, diff):
 
 
 print("CASE 1")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe110",-1)
-print(localize(ogHash, cHash, start_index, 3))
+ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe110", 0)
+print(localize(ogHash, cHash, start_index))
 
 print("CASE 2")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe1lo", -1)
-print(localize(ogHash, cHash, start_index, 3))
+ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe1lo", 0)
+print(localize(ogHash, cHash, start_index))
 
 print("CASE 3")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloBYeyeHe1lo", -1)
-print(localize(ogHash, cHash, start_index, 3))
+ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloBYeyeHe1lo", 0)
+print(localize(ogHash, cHash, start_index))
 
 print("CASE 4")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","BybebHelloHello", -1)
-print(localize(ogHash, cHash, start_index, 3))
+ogHash, cHash, start_index = binary_search("HelloHelloHello","BybebHelloHello", 0)
+print(localize(ogHash, cHash, start_index))
