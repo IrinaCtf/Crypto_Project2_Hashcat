@@ -176,7 +176,7 @@ corrupted, target = randCorruptSeq(message, 8)
 
 print(f'Error at {target}')
 
-gadget = Detective(len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
+gadget = Detective(limit=len(message), hashFunc=lambda x: hl.md5(x.encode('ascii')).hexdigest(), order=2)
 # gadget = Detective(len(message), lambda x: x)
 
 print(gadget.remember(message))
