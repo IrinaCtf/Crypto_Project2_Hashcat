@@ -3,9 +3,14 @@ import hashlib as hl
 import random as rnd
 from string import ascii_letters as ascii_set
 
+
 class Detective:
+    """
+    Detective implements the tagging mechanism for corruption detection.
+    This method involves breaking data into prime number segments
+    """
         
-    def __init__(self, limit:int, hashFunc):
+    def __init__(self, limit:int, hashFunc, order:int=2):
         """
         limit: determines the number upto which primes are generated
         hashFunc: a hard predicate that takes encoded strings as input and throws a hex hash digest out
@@ -22,25 +27,32 @@ class Detective:
             print(f"ERR: hash function compuation failure!")
             exit(1)
 
-        self.__lvl = self._gen_primes(limit)
+        try:
+            assert(order >= 1) # checks if function computes
+        except:
+            print(f"ERR: order {order} is not computable! order must be at least 2")
+            exit(1)
+
+    
+        self.__lvl = self._gen_primes(limit, order)
         self.__hash = hashFunc
 
         pass
 
-    def _gen_primes(self, limit:int) -> int:
+    def _gen_primes(self, limit:int, order:int) -> int:
         """
         INPUT: limit, int
         OUTPUTL pi(x); number of primes, int
         upto the limit, collects all primes. Returns number of primes, pi(x)
         Uses Sieve of Eratosthenes
         """
-        if limit < 4:
+        if limit < 2:
             self.__primes = []
             return 0
         
         primes = [ 2 ]
 
-        for number in range(3, int(mt.sqrt(limit)) + 1):
+        for number in range(3, int(mt.pow(limit, 1/order)) + 1):
             isPrime = True
             for prime in primes:
                 if number % prime == 0:
@@ -164,7 +176,7 @@ corrupted, target = randCorruptSeq(message, 8)
 
 print(f'Error at {target}')
 
-gadget = Detective(len(message), lambda x: hl.md5(x.encode('ascii')).hexdigest())
+gadget = Detective(limit=len(message), hashFunc=lambda x: hl.md5(x.encode('ascii')).hexdigest(), order=2)
 # gadget = Detective(len(message), lambda x: x)
 
 print(gadget.remember(message))
