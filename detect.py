@@ -54,7 +54,10 @@ class Detective:
 
         # Generating dem primes
 
-        for number in range(3, int(mt.pow(limit, 1/order)) + 1): # Might change this to find first n primes
+        number = 3
+        level = int(mt.pow(limit, 1 / order))
+
+        while True:
             isPrime = True
             for prime in primes:
                 if number % prime == 0: # Primes dont divide primes, naysayer
@@ -62,10 +65,15 @@ class Detective:
             
             if isPrime: # Passed the test
                 primes.append(number)
+
+                if len(primes) >= level: # We have enough primes, let's get out
+                    break
+            
+            number += 1
         
         self.__primes = primes
 
-        return len(primes)
+        return level
     
     def primes(self) -> tuple:
         return self.__primes
@@ -181,7 +189,7 @@ corrupted, target = randCorruptSeq(message, 8)
 
 print(f'Error at {target}')
 
-gadget = Detective(limit=len(message), hashFunc=lambda x: hl.md5(x.encode('ascii')).hexdigest(), order=2)
+gadget = Detective(limit=len(message), hashFunc=lambda x: hl.md5(x.encode('ascii')).hexdigest(), order=3)
 # gadget = Detective(len(message), lambda x: x)
 
 print(gadget.remember(message))
