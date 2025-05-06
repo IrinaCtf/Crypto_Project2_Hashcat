@@ -102,6 +102,10 @@ class Detective:
         Compares stored hash superset with the superset of said suspect.
         RETURNS sets of Trues if no corruption detected.
         """
+        try:
+            assert(len(suspect) == len(self.__segmentset)) #modification
+        except AssertionError:
+            print(f"disimilar length in inspect(): expected {len(self.__segmentset)}, got {len(suspect)}")
         set_index = 0
 
         checkSuperset = []
