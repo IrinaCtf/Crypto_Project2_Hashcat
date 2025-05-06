@@ -52,18 +52,28 @@ class Detective:
         
         primes = [ 2 ]
 
-        for number in range(3, int(mt.pow(limit, 1/order)) + 1):
+        # Generating dem primes
+
+        number = 3
+        level = int(mt.pow(limit, 1 / order))
+
+        while True:
             isPrime = True
             for prime in primes:
-                if number % prime == 0:
+                if number % prime == 0: # Primes dont divide primes, naysayer
                     isPrime = False
             
-            if isPrime:
+            if isPrime: # Passed the test
                 primes.append(number)
+
+                if len(primes) >= level: # We have enough primes, let's get out
+                    break
+            
+            number += 1
         
         self.__primes = primes
 
-        return len(primes)
+        return level
     
     def primes(self) -> tuple:
         return self.__primes
@@ -79,14 +89,14 @@ class Detective:
         segmentSet = []
 
         for segmentCount in range(0, self.__lvl):
-            if segmentCount > len(message):
+            if segmentCount > len(message): # Trivial case
                 return segmentSet
 
             segments = []
-            width = len(message) // self.__primes[segmentCount]
+            width = len(message) // self.__primes[segmentCount] # Segment size = L / pi
             
             for idx in range(0, len(message), width):
-                segmentHash = self.__hash(message[idx : idx + width])
+                segmentHash = self.__hash(message[idx : idx + width]) # Hashing the segment
                 segments.append(segmentHash)
             
             segmentSet.append(segments)
@@ -114,14 +124,14 @@ class Detective:
         Compares stored hash superset with the superset of said suspect.
         RETURNS sets of Trues if no corruption detected.
         """
-         
+
         set_index = 0
 
         checkSuperset = []
 
         for segmentCount in range(0, self.__lvl):
             if segmentCount > len(suspect):
-                return checkSuperset
+                return checkSuperset 
                 
             width = len(suspect) // self.__primes[segmentCount]
             
@@ -168,12 +178,18 @@ def randCorruptSeq(message:str, length:int) -> { str, tuple }:
 
     return previous + corruption + next, (start, start + length - 1)
 
+## STRICTLY FOR TESTING AND/OR EXAMPLE
+##  ||
+##  ||
+##  \/
+
+
 message =   "I have a lot of characters fitting in here, can you find the error?"
 corrupted, target = randCorruptSeq(message, 8)
 
 print(f'Error at {target}')
 
-gadget = Detective(limit=len(message), hashFunc=lambda x: hl.md5(x.encode('ascii')).hexdigest(), order=2)
+gadget = Detective(limit=len(message), hashFunc=lambda x: hl.md5(x.encode('ascii')).hexdigest(), order=3)
 # gadget = Detective(len(message), lambda x: x)
 
 print(gadget.remember(message))
