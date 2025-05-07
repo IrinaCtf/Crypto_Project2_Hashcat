@@ -175,3 +175,4 @@ def randCorruptSeq(message:str, length:int) -> { str, tuple }:
     corruption = ''.join(rnd.choice(ascii_set) for _ in range(length))
 
     return previous + corruption + next, (start, start + length - 1)
+
