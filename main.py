@@ -15,15 +15,15 @@ def main():
     '''
     Are we handling the length difference the way above? Just abandon the longer part???
     '''
-
+    #original_message = "HelloHelloHello"
+    #corrupted_message = "HelloGoodbHello"
     # Step 2: Create Detective instance
     limit = 2 * len(original_message)
     hash_func = lambda x:x  #lambda x: hl.md5(x.encode('ascii')).hexdigest()
     agent = Detective(limit, hash_func)
 
     # Step 3: Get superset hashes
-    original_message = "HelloHelloHello"
-    corrupted_message = "HelloGoodbHello"
+    
     original_superset = agent.superSet(original_message)
 
     #TO DO: to localize function in localize.py once done
@@ -48,6 +48,7 @@ def main():
     print("MAIN " + ogHash[lvl][start_index] + " "+ cHash[lvl][start_index])
     i, j, corrupted_text =localize(ogHash, cHash, start_index, lvl)
     print("start "+str(i) +" end "+str(j) +" " + str(corrupted_text))
+    #print("og start "+str(i) +" end "+str(j) +" " + str(corrupted_text))
 
 if __name__ == "__main__":
     main()

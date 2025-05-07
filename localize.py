@@ -1,12 +1,14 @@
-
+import math
 #when calling send M hash, M' hash
 def binary_search(ogHash, cHash, mid, level):
-    high = len(ogHash[level])
-    low = 0
-    if level >= len(ogHash):
-        print("return cuz we got to max level "+ str(level) +" "+ogHash[level])
-        return (ogHash, cHash, mid, level)
+    
+    print("current level "+ str(level) +" out of "+ str(len(ogHash)))
+    if level >= math.sqrt(len(ogHash)):
+        print("return cuz we got to max level "+ str(level))
+        return (ogHash, cHash, mid, level-1)
     else: # Check base case
+        high = len(ogHash[level])
+        low = 0
         if high > low:
 
             mid = (high + low) // 2
@@ -14,12 +16,12 @@ def binary_search(ogHash, cHash, mid, level):
             # If element is present at the middle itself
             if ogHash[level][mid] != cHash[level][mid]:
                 print(ogHash[level][mid] +" "+ cHash[level][mid])
-                return (ogHash, cHash, mid, level)
+                return binary_search(ogHash, cHash, mid, level + 1)
 
             # If element is equal at mid, then it can only
             # be present in left subarray or the latter half
             elif ogHash[level][mid] == cHash[level][mid]:
-                print(ogHash +" "+ cHash)
+                #print(str(ogHash +" "+ cHash)
                 return binary_search(ogHash, cHash, mid+1, level +1)
 
         else:
@@ -34,7 +36,7 @@ def localize(ogHash, cHash, start_index, level):
     checked = 1
     counter = 0
     k = start_index
-    begin_corrupt_index = -1
+    begin_corrupt_index = corrupt_len
     end_corrupt_index = -1
     print("start w "+ str(k))
     '''
@@ -49,16 +51,21 @@ def localize(ogHash, cHash, start_index, level):
     '''
     while(counter < corrupt_len):
         print(counter)
+
+
+        #check that we found the whole corruption
+        if(begin_corrupt_index != corrupt_len and end_corrupt_index != -1):
+            break
         #check that we haven't reached the end
         if(k + checked >= corrupt_len):
-            end_corrupt_index = corrupt_len
+            print("we set end ")
+            end_corrupt_index = corrupt_len 
         #check that we haven't reached the start
         if(k - checked < 0):
+            print("we set begin "+str(k-checked))
             begin_corrupt_index = 0
         
-        #check that we found the whole corruption
-        if(begin_corrupt_index != -1 and end_corrupt_index != -1):
-            break
+        
 
         #check end
         if(end_corrupt_index == -1 and cHash[level][k+checked] == ogHash[level][k+checked]):
@@ -67,10 +74,11 @@ def localize(ogHash, cHash, start_index, level):
             print("end counter "+ str(counter))
 
         #check beginning
-        if(begin_corrupt_index == -1 and cHash[level][k-checked] == ogHash[level][k-checked]):
+        if(begin_corrupt_index == corrupt_len and cHash[level][k-checked] == ogHash[level][k-checked]):
             begin_corrupt_index = k - checked + 1
             #checked += 1
             print("begin counter "+ str(counter))
+            print("checking beging "+ str(cHash[level][k-checked]) + " "+ogHash[level][k-checked])
         checked +=1
         counter +=1
     return (begin_corrupt_index, end_corrupt_index, cHash[level][begin_corrupt_index:end_corrupt_index])  
