@@ -40,18 +40,17 @@ def evaluate_case(original: str, corrupted: str, case_name: str):
     """
     i_expected, j_expected = find_expected_range(original, corrupted)
 
-    # Predict i': start of corruption
+    # Predict (i', j') from localize
     tags1_start, tags2_start = tag(original)
-    i_prime = localize(corrupted[:len(original)], tags1_start, tags2_start)
+    result = localize(corrupted[:len(original)], tags1_start, tags2_start)
 
-    # Predict j': end of corruption using reversed strings
-    original_rev = original[::-1]
-    corrupted_rev = corrupted[::-1]
-    tags1_end, tags2_end = tag(original_rev)
-    j_prime_rev = localize(corrupted_rev[:len(original)], tags1_end, tags2_end)
-    # print(j_prime_rev)
-    j_prime = len(corrupted) - j_prime_rev - 1 if j_prime_rev != -1 else -1
-    # print(original_rev, corrupted_rev, j_prime_rev, sep = "\n")
+    if result == -1:
+        i_prime, j_prime = len(original), len(corrupted)
+    else:
+        i_prime, j_base = result
+        # print(i_prime, j_base)
+        # adjust j to corrupted string: + (L' - L + 1)
+        j_prime = j_base + (len(corrupted) - len(original))
 
     # Calculate factor
     factor = calculate_localize_factor(i_expected, j_expected, i_prime, j_prime)
