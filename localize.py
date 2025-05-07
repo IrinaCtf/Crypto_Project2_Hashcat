@@ -9,10 +9,8 @@ def bin_localize(agent, corrupted_message, original_hashset):
 #when calling send M hash, M' hash
 def binary_search(ogHash, cHash, mid, level):
     
-    #TESTING: DELETE AFTER TESTING
-    print("current level "+ str(level) +" out of "+ str(len(ogHash)))
+
     if level >= math.sqrt(len(ogHash)):
-        print("return cuz we got to max level "+ str(level))
         return (ogHash, cHash, mid, level-1)
     else: # Check base case
         high = len(ogHash[level])
@@ -20,20 +18,18 @@ def binary_search(ogHash, cHash, mid, level):
         if high > low:
 
             mid = (high + low) // 2
-            print("mid "+ str(mid))
+
             # If element is present at the middle itself
             if ogHash[level][mid] != cHash[level][mid]:
-                print(ogHash[level][mid] +" "+ cHash[level][mid])
                 return binary_search(ogHash, cHash, mid, level + 1)
 
             # If element is equal at mid, then it can only
             # be present in left subarray or the latter half
             elif ogHash[level][mid] == cHash[level][mid]:
-                #print(str(ogHash +" "+ cHash)
                 return binary_search(ogHash, cHash, mid+1, level +1)
 
         else:
-            # Everything is equal
+            # TO DO: MAKE THIS NEATER? Everything is equal 
             print("equal")
             return (ogHash,cHash,0, 0)
 
@@ -63,24 +59,20 @@ def localize(ogHash, cHash, start_index, level):
             break
         #check that we haven't reached the end
         if(k + checked >= corrupt_len):
-            print("we set end ")
             end_corrupt_index = corrupt_len 
-        #check that we haven't reached the start
+
         if(k - checked < 0):
-            print("we set begin "+str(k-checked))
             begin_corrupt_index = 0
         
         #check end
         if(end_corrupt_index == -1 and cHash[level][k+checked] == ogHash[level][k+checked]):
             end_corrupt_index = k + checked
-            print("end counter "+ str(counter))
+
 
         #check beginning
         if(begin_corrupt_index == corrupt_len and cHash[level][k-checked] == ogHash[level][k-checked]):
             begin_corrupt_index = k - checked + 1
 
-            print("begin counter "+ str(counter))
-            print("checking beging "+ str(cHash[level][k-checked]) + " "+ogHash[level][k-checked])
         checked +=1
         counter +=1
 

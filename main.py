@@ -4,9 +4,6 @@ from detect import Detective
 from localize import bin_localize
 
 
-def getCorruptedHashes(agent, corrupted_message):
-    return agent.superSet(corrupted_message)
-
 def main():
     # Step 1: Open test file and read content
     with open("test.txt", "r") as file:
@@ -30,9 +27,6 @@ def main():
     
     original_superset = agent.superSet(original_message)
 
-    #TO DO: to localize function in localize.py once done
-    corrupted_superset = getCorruptedHashes(agent, corrupted_message)
-
     # Step 4: Get list of primes
     prime_list = agent.primes()
 
@@ -41,14 +35,12 @@ def main():
     for segment in original_superset:
         print(segment)
 
-    print("\nCorrupted Superset Hashes:")
-    for segment in corrupted_superset:
-        print(segment)
-
-
+    # Step 6: Perform binary search and localize
     i, j, corrupted_text = bin_localize(agent, corrupted_message, original_superset)
-    print("start "+str(i) +" end "+str(j) +" " + str(corrupted_text))
-    #print("og start "+str(i) +" end "+str(j) +" " + str(corrupted_text))
+    print("Start of corruption index i':"+str(i) +"\tEnd of corruption index j':"+str(j) +"\nCorrupted Hashes " + str(corrupted_text))
+
+    # Step 7: Analysis TO DO
+
 
 if __name__ == "__main__":
     main()
