@@ -1,7 +1,11 @@
 # main.py
 import hashlib as hl
 from detect import Detective
-from localize import localize, binary_search 
+from localize import bin_localize
+
+
+def getCorruptedHashes(agent, corrupted_message):
+    return agent.superSet(corrupted_message)
 
 def main():
     # Step 1: Open test file and read content
@@ -12,14 +16,14 @@ def main():
             return
         original_message = lines[0].strip()
         corrupted_message = lines[1].strip()[:len(original_message)]
-    '''
-    Are we handling the length difference the way above? Just abandon the longer part???
-    '''
+
+    #TO DO: DELETE ONCE ALL TESTING IS DONE
     #original_message = "HelloHelloHello"
     #corrupted_message = "HelloGoodbHello"
+
     # Step 2: Create Detective instance
     limit = 2 * len(original_message)
-    hash_func = lambda x:x  #lambda x: hl.md5(x.encode('ascii')).hexdigest()
+    hash_func = lambda x: hl.md5(x.encode('ascii')).hexdigest()
     agent = Detective(limit, hash_func)
 
     # Step 3: Get superset hashes
@@ -27,7 +31,7 @@ def main():
     original_superset = agent.superSet(original_message)
 
     #TO DO: to localize function in localize.py once done
-    corrupted_superset = agent.superSet(corrupted_message)
+    corrupted_superset = getCorruptedHashes(agent, corrupted_message)
 
     # Step 4: Get list of primes
     prime_list = agent.primes()
@@ -41,12 +45,8 @@ def main():
     for segment in corrupted_superset:
         print(segment)
 
-    print("\nList of Primes:")
-    print(prime_list)
-    print("CASE 1")
-    ogHash, cHash, start_index, lvl = binary_search(original_superset,corrupted_superset, 0,0)
-    print("MAIN " + ogHash[lvl][start_index] + " "+ cHash[lvl][start_index])
-    i, j, corrupted_text =localize(ogHash, cHash, start_index, lvl)
+
+    i, j, corrupted_text = bin_localize(agent, corrupted_message, original_superset)
     print("start "+str(i) +" end "+str(j) +" " + str(corrupted_text))
     #print("og start "+str(i) +" end "+str(j) +" " + str(corrupted_text))
 

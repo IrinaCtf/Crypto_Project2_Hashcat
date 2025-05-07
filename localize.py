@@ -1,7 +1,15 @@
 import math
+from detect import Detective
+
+def bin_localize(agent, corrupted_message, original_hashset):
+    corrupted_hashset = agent.superSet(corrupted_message)
+    ogHash, cHash, start_index, lvl = binary_search(original_hashset,corrupted_hashset, 0,0)
+    return localize(ogHash, cHash, start_index, lvl)
+
 #when calling send M hash, M' hash
 def binary_search(ogHash, cHash, mid, level):
     
+    #TESTING: DELETE AFTER TESTING
     print("current level "+ str(level) +" out of "+ str(len(ogHash)))
     if level >= math.sqrt(len(ogHash)):
         print("return cuz we got to max level "+ str(level))
@@ -38,7 +46,6 @@ def localize(ogHash, cHash, start_index, level):
     k = start_index
     begin_corrupt_index = corrupt_len
     end_corrupt_index = -1
-    print("start w "+ str(k))
     '''
     case 0: only one index was corrupted so checked needs to start at 0
     this can mean that we can stop searching too hence the break
@@ -50,8 +57,6 @@ def localize(ogHash, cHash, start_index, level):
     so we don't need to keep checking that end
     '''
     while(counter < corrupt_len):
-        print(counter)
-
 
         #check that we found the whole corruption
         if(begin_corrupt_index != corrupt_len and end_corrupt_index != -1):
@@ -65,39 +70,18 @@ def localize(ogHash, cHash, start_index, level):
             print("we set begin "+str(k-checked))
             begin_corrupt_index = 0
         
-        
-
         #check end
         if(end_corrupt_index == -1 and cHash[level][k+checked] == ogHash[level][k+checked]):
-            end_corrupt_index = k + checked - 1
-            #checked += 1
+            end_corrupt_index = k + checked
             print("end counter "+ str(counter))
 
         #check beginning
         if(begin_corrupt_index == corrupt_len and cHash[level][k-checked] == ogHash[level][k-checked]):
             begin_corrupt_index = k - checked + 1
-            #checked += 1
+
             print("begin counter "+ str(counter))
             print("checking beging "+ str(cHash[level][k-checked]) + " "+ogHash[level][k-checked])
         checked +=1
         counter +=1
+
     return (begin_corrupt_index, end_corrupt_index, cHash[level][begin_corrupt_index:end_corrupt_index])  
-
-
-
-'''
-print("CASE 1")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe110", 0)
-print(localize(ogHash, cHash, start_index))
-
-print("CASE 2")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe1lo", 0)
-print(localize(ogHash, cHash, start_index))
-
-print("CASE 3")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloBYeyeHe1lo", 0)
-print(localize(ogHash, cHash, start_index))
-
-print("CASE 4")
-ogHash, cHash, start_index = binary_search("HelloHelloHello","BybebHelloHello", 0)
-print(localize(ogHash, cHash, start_index)) '''
