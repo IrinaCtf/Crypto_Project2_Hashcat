@@ -37,6 +37,7 @@ class Detective:
         self.__lvl = self._gen_primes(limit, order)
         self.__hash = hashFunc
 
+
         pass
 
     def _gen_primes(self, limit:int, order:int) -> int:
@@ -144,9 +145,6 @@ class Detective:
 
                 checkSet.append(segmentHash == self.__segmentset[set_index][segment_index])
                 
-                # if segmentHash != self.__segmentset[set_index][segment_index]:
-                #     return (set_index, segment_index)
-                
                 segment_index += 1
             
             checkSuperset.append(checkSet)
@@ -154,7 +152,7 @@ class Detective:
             set_index += 1
         
         return checkSuperset
-        # return (-1, -1)
+    
         
 def randCorruptSeq(message:str, length:int) -> { str, tuple }:
     """
@@ -178,21 +176,3 @@ def randCorruptSeq(message:str, length:int) -> { str, tuple }:
 
     return previous + corruption + next, (start, start + length - 1)
 
-## STRICTLY FOR TESTING AND/OR EXAMPLE
-##  ||
-##  ||
-##  \/
-
-
-message =   "I have a lot of characters fitting in here, can you find the error?"
-corrupted, target = randCorruptSeq(message, 8)
-
-print(f'Error at {target}')
-
-gadget = Detective(limit=len(message), hashFunc=lambda x: hl.md5(x.encode('ascii')).hexdigest(), order=5)
-# gadget = Detective(len(message), lambda x: x)
-
-print(gadget.remember(message))
-print(gadget.superSet(corrupted))
-
-print(gadget.inspect(corrupted))
