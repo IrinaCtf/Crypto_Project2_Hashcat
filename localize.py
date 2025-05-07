@@ -3,13 +3,14 @@
 def binary_search(ogHash, cHash, mid, level):
     high = len(ogHash[level])
     low = 0
-    if level == len(ogHash):
+    if level >= len(ogHash):
+        print("return cuz we got to max level "+ str(level) +" "+ogHash[level])
         return (ogHash, cHash, mid, level)
     else: # Check base case
         if high > low:
 
             mid = (high + low) // 2
-
+            print("mid "+ str(mid))
             # If element is present at the middle itself
             if ogHash[level][mid] != cHash[level][mid]:
                 print(ogHash[level][mid] +" "+ cHash[level][mid])
@@ -27,9 +28,9 @@ def binary_search(ogHash, cHash, mid, level):
             return (ogHash,cHash,0, 0)
 
 
-def localize(ogHash, cHash, start_index):
+def localize(ogHash, cHash, start_index, level):
 
-    corrupt_len = len(cHash)
+    corrupt_len = len(cHash[level])
     checked = 1
     counter = 0
     k = start_index
@@ -60,19 +61,19 @@ def localize(ogHash, cHash, start_index):
             break
 
         #check end
-        if(end_corrupt_index == -1 and cHash[k+checked] == ogHash[k+checked]):
+        if(end_corrupt_index == -1 and cHash[level][k+checked] == ogHash[level][k+checked]):
             end_corrupt_index = k + checked - 1
             #checked += 1
             print("end counter "+ str(counter))
 
         #check beginning
-        if(begin_corrupt_index == -1 and cHash[k-checked] == ogHash[k-checked]):
+        if(begin_corrupt_index == -1 and cHash[level][k-checked] == ogHash[level][k-checked]):
             begin_corrupt_index = k - checked + 1
             #checked += 1
             print("begin counter "+ str(counter))
         checked +=1
         counter +=1
-    return (begin_corrupt_index, end_corrupt_index, cHash[begin_corrupt_index:end_corrupt_index])  
+    return (begin_corrupt_index, end_corrupt_index, cHash[level][begin_corrupt_index:end_corrupt_index])  
 
 
 

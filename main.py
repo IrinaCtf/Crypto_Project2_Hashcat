@@ -22,7 +22,8 @@ def main():
     agent = Detective(limit, hash_func)
 
     # Step 3: Get superset hashes
-
+    original_message = "HelloHelloHello"
+    corrupted_message = "HelloGoodbHello"
     original_superset = agent.superSet(original_message)
 
     #TO DO: to localize function in localize.py once done
@@ -45,6 +46,8 @@ def main():
     print("CASE 1")
     ogHash, cHash, start_index, lvl = binary_search(original_superset,corrupted_superset, 0,0)
     print("MAIN " + ogHash[lvl][start_index] + " "+ cHash[lvl][start_index])
+    i, j, corrupted_text =localize(ogHash, cHash, start_index, lvl)
+    print("start "+str(i) +" end "+str(j) +" " + str(corrupted_text))
 
 if __name__ == "__main__":
     main()
