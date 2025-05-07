@@ -83,18 +83,13 @@ def localize(message: str, hashes1: list[str], hashes2: list[str]) -> Union[tupl
             return result
 
     start_result = check_from_start(message, hashes1)
-    end_result = check_from_end(message, hashes2)
-    print("start_result and end_results are: ", start_result, end_result, end = ";")
-    if not start_result and not end_result:
+    # end_result = check_from_end(message, hashes2)
+    # if not start_result and not end_result:
+    #     return -1
+    # return (i, j)
+    if not start_result: 
         return -1
-
-    i = max(start_result[0] if start_result else 0,
-            end_result[0] if end_result else 0)
-    j = min(start_result[1] if start_result else len(message),
-            end_result[1] if end_result else len(message))
-
-    return (i, j)
-
+    return start_result
 
 # Optional test
 if __name__ == "__main__":
