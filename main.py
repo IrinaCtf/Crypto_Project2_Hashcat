@@ -43,8 +43,8 @@ def main():
     print("\nList of Primes:")
     print(prime_list)
     print("CASE 1")
-    ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe110", 0)
-    print(localize(ogHash, cHash, start_index))
+    ogHash, cHash, start_index, lvl = binary_search(original_superset,corrupted_superset, 0,0)
+    print("MAIN " + ogHash[lvl][start_index] + " "+ cHash[lvl][start_index])
 
 if __name__ == "__main__":
     main()

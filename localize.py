@@ -1,29 +1,30 @@
 
 #when calling send M hash, M' hash
-def binary_search(ogHash, cHash, mid):
-    high = len(ogHash)
+def binary_search(ogHash, cHash, mid, level):
+    high = len(ogHash[level])
     low = 0
+    if level == len(ogHash):
+        return (ogHash, cHash, mid, level)
+    else: # Check base case
+        if high > low:
 
-    # Check base case
-    if high > low:
+            mid = (high + low) // 2
 
-        mid = (high + low) // 2
+            # If element is present at the middle itself
+            if ogHash[level][mid] != cHash[level][mid]:
+                print(ogHash[level][mid] +" "+ cHash[level][mid])
+                return (ogHash, cHash, mid, level)
 
-        # If element is present at the middle itself
-        if ogHash[mid] != cHash[mid]:
-            print(ogHash +" "+ cHash)
-            return (ogHash, cHash, mid)
+            # If element is equal at mid, then it can only
+            # be present in left subarray or the latter half
+            elif ogHash[level][mid] == cHash[level][mid]:
+                print(ogHash +" "+ cHash)
+                return binary_search(ogHash, cHash, mid+1, level +1)
 
-        # If element is equal at mid, then it can only
-        # be present in left subarray or the latter half
-        elif ogHash[mid] == cHash[mid]:
-            print(ogHash +" "+ cHash)
-            return binary_search(ogHash[mid+1:], cHash[mid+1:], mid+1)
-
-    else:
-        # Everything is equal
-        print("equal")
-        return (ogHash,cHash,0)
+        else:
+            # Everything is equal
+            print("equal")
+            return (ogHash,cHash,0, 0)
 
 
 def localize(ogHash, cHash, start_index):
@@ -75,7 +76,7 @@ def localize(ogHash, cHash, start_index):
 
 
 
-
+'''
 print("CASE 1")
 ogHash, cHash, start_index = binary_search("HelloHelloHello","HelloHelloHe110", 0)
 print(localize(ogHash, cHash, start_index))
@@ -90,4 +91,4 @@ print(localize(ogHash, cHash, start_index))
 
 print("CASE 4")
 ogHash, cHash, start_index = binary_search("HelloHelloHello","BybebHelloHello", 0)
-print(localize(ogHash, cHash, start_index))
+print(localize(ogHash, cHash, start_index)) '''
