@@ -1,15 +1,18 @@
 import math
 from detect import Detective
 
+
+# driver function that first conducts binary search
+# results from binary search are taken to localize to find adjacent corruptions
 def bin_localize(agent, corrupted_message, original_hashset):
     corrupted_hashset = agent.superSet(corrupted_message)
     ogHash, cHash, start_index, lvl = binary_search(original_hashset,corrupted_hashset, 0,0)
     return localize(ogHash, cHash, start_index, lvl)
 
-#when calling send M hash, M' hash
+
 def binary_search(ogHash, cHash, mid, level):
     
-
+    #search for corruption in depth
     if level >= math.sqrt(len(ogHash)):
         return (ogHash, cHash, mid, level-1)
     else: # Check base case
@@ -29,8 +32,7 @@ def binary_search(ogHash, cHash, mid, level):
                 return binary_search(ogHash, cHash, mid+1, level +1)
 
         else:
-            # TO DO: MAKE THIS NEATER? Everything is equal 
-            print("equal")
+
             return (ogHash,cHash,0, 0)
 
 
@@ -61,6 +63,7 @@ def localize(ogHash, cHash, start_index, level):
         if(k + checked >= corrupt_len):
             end_corrupt_index = corrupt_len 
 
+        #check that we haven't reached past the start
         if(k - checked < 0):
             begin_corrupt_index = 0
         
@@ -73,7 +76,8 @@ def localize(ogHash, cHash, start_index, level):
         if(begin_corrupt_index == corrupt_len and cHash[level][k-checked] == ogHash[level][k-checked]):
             begin_corrupt_index = k - checked + 1
 
+        #increment counters
         checked +=1
         counter +=1
 
-    return (begin_corrupt_index, end_corrupt_index, cHash[level][begin_corrupt_index:end_corrupt_index])  
+    return (begin_corrupt_index, end_corrupt_index, cHash[level][begin_corrupt_index:end_corrupt_index], cHash, level)  
