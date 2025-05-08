@@ -33,54 +33,75 @@ def calculate_localize_factor(i: int, j: int, i_prime: int, j_prime: int) -> flo
         return float('inf') # Avoid division by zero
     return true_range / predicted_range
 
-def evaluate_case(original: str, corrupted: str, case_name: str):
+def get_predicted_bounds(original: str, corrupted: str) -> tuple[int, int]:
     """
-    Run a single corruption detection test using tag and localize on both forward and reverse strings.
-    Print predicted and expected start/end of corruption, localization factor, and hash count.
+    Returns the predicted (i', j') indices from the localize function, 
+    adjusted for corruption that makes L' > L.
     """
-    i_expected, j_expected = find_expected_range(original, corrupted)
-
-    # Predict (i', j') from localize
     tags1_start, tags2_start = tag(original)
     result = localize(corrupted[:len(original)], tags1_start, tags2_start)
 
     if result == -1:
-        i_prime, j_prime = len(original), len(corrupted)
+        return len(original), len(corrupted)
     else:
         i_prime, j_base = result
-        # print(i_prime, j_base)
-        # adjust j to corrupted string: + (L' - L + 1)
         j_prime = j_base + (len(corrupted) - len(original))
+        return i_prime, j_prime
 
-    # Calculate factor
+def evaluate_case(original: str, corrupted: str, case_name: str, c: int = 4):
+    """
+    Run corruption detection test using tag/localize. Rotates corrupted message in steps of c.
+    Aggregates best i' lower bound and j' upper bound.
+    Final i' = max lower bound
+    Final j' = min upper bound + (L' - L)
+    """
+    i_expected, j_expected = find_expected_range(original, corrupted)
+    L = len(original)
+    L_dash = len(corrupted)
+    # print(corrupted, original, L_dash, L)
+    corrupted = corrupted[:L]
+    num_rounds = max(1, L_dash // c)
+
+    best_lower = -1
+    best_upper = L_dash
+
+    for r in range(num_rounds):
+        if (i_expected <= r * c): break
+        rotated = corrupted[r * c:] + corrupted[:r * c]
+        i_lower, i_upper = get_predicted_bounds(original, rotated)
+
+        # Rotate bounds back to original index space
+        i_lower = (i_lower + r * c) % L_dash
+        i_upper = (i_upper + r * c) % L_dash
+
+        best_lower = max(best_lower, i_lower)
+        best_upper = min(best_upper, i_upper)
+
+    i_prime = best_lower
+    j_prime = best_upper + (L_dash - L)
+
     factor = calculate_localize_factor(i_expected, j_expected, i_prime, j_prime)
-
-    # Total number of hash tags used (both forward and reverse)
-    num_hashes_used = len(tags1_start) + len(tags2_start)
+    tags1, tags2 = tag(original)
+    num_hashes_used = len(tags1) + len(tags2)
 
     print(f"[{case_name}]")
+    print(f"  Message Length = {len(original)}")
     print(f"  Expected: i = {i_expected}, j = {j_expected}")
     print(f"  Predicted: i' = {i_prime}, j' = {j_prime}")
     print(f"  Localization Factor: {factor:.2f}; Hashes Used: {num_hashes_used}")
 
 def run_inline_tests():
     test_cases = [
-        # (original, corrupted)
-        ("a" * 64, "a" * 32 + "X" * 5 + "a" * 32),
-        ("abcdef" * 20, "abcdef" * 10 + "INSERTEDTEXT" + "abcdef" * 10),
-        ("The quick brown fox jumps over the lazy dog",
-         "The quick brown fox jumps INSERTED over the lazy dog"),
-        ("abcdefghijklmnopqrstuvwxyz" * 3,
-         "abcdefghijXklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz" * 2),
-        ("1234567890" * 10,
-         "1234567890" * 5 + "CORRUPTION" + "1234567890" * 5),
-        ("openai" * 100,
-         "openai" * 70 + "EXTRAEXTRAEXTRA" + "openai" * 30),
-        ("Data structures and algorithms are fun!" * 5,
-         ("Data structures and algorithms are fun!" * 2) +
-         ">>>GLITCH<<<" +
-         ("Data structures and algorithms are fun!" * 3)),
-        # ("z" * 200, "z" * 199 + "Q"),
+        # One insertion in the middle
+        ("abcdefghijabcdefghij", "abcdefghijHELLOabcdefghij"),
+        # One short insertion in middle
+        ("hellotheregeneral", "hello123theregeneral"),
+        # One long insertion in middle
+        ("datastructuresandalgos", "datastructuresINSERTIONandalgos"),
+        # Insertion of special characters
+        ("opensesameopen", "opensesa@@@meopen"),
+        # Numeric insertion
+        ("zipzapzoom", "zip777zapzoom"),
     ]
 
     for i, (original, corrupted) in enumerate(test_cases):
