@@ -33,61 +33,55 @@ def calculate_localize_factor(i: int, j: int, i_prime: int, j_prime: int) -> flo
         return float('inf') # Avoid division by zero
     return abs(true_range / predicted_range)
 
-def get_predicted_bounds(original: str, corrupted: str) -> tuple[int, int]:
-    """
-    Returns the predicted (i', j') indices from the localize function, 
-    adjusted for corruption that makes L' > L.
-    """
-    tags1_start, tags2_start = tag(original)
-    result = localize(corrupted[:len(original)], tags1_start, tags2_start)
-
-    if result == -1:
-        return len(original), len(corrupted)
-    else:
-        i_prime, j_base = result
-        j_prime = j_base + (len(corrupted) - len(original))
-        return i_prime, j_prime
-
 def evaluate_case(original: str, corrupted: str, case_name: str, c: int = 4):
     """
-    Run corruption detection test using tag/localize. Rotates corrupted message in steps of c.
-    Aggregates best i' lower bound and j' upper bound.
-    Final i' = max lower bound
-    Final j' = min upper bound + (L' - L)
+    Run corruption detection with rotated windowing via extended strings.
+    Predict i' and j' by localizing over L+1-length rotated windows.
     """
     i_expected, j_expected = find_expected_range(original, corrupted)
+
     L = len(original)
     L_dash = len(corrupted)
-    # print(corrupted, original, L_dash, L)
-    corrupted = corrupted[:L]
-    num_rounds = max(1, L_dash // c)
 
-    best_lower = -1
-    best_upper = L_dash
+    original_ext = original + original
+    corrupted_ext = corrupted + corrupted
+    original_rev_ext = original[::-1] + original[::-1]
+    corrupted_rev_ext = corrupted[::-1] + corrupted[::-1]
+
+    num_rounds = max(1, L_dash // c)
+    best_i = -1
+    best_j = L_dash
 
     for r in range(num_rounds):
-        if (i_expected <= r * c): break
-        rotated = corrupted[r * c:] + corrupted[:r * c]
-        i_lower, i_upper = get_predicted_bounds(original, rotated)
+        start = r * c
+        if i_expected <= start <= j_expected:
+            continue
 
-        # Rotate bounds back to original index space
-        i_lower = (i_lower + r * c) % L_dash
-        i_upper = (i_upper + r * c) % L_dash
+        # Forward localization (start)
+        forward_window_o = original_ext[start : start + L + 1]
+        forward_window_c = corrupted_ext[start : start + L + 1]
+        i_rot = localize(forward_window_c, *tag(forward_window_o))
+        if i_rot != -1:
+            i_rot = (i_rot + start) % L_dash
+            best_i = max(best_i, i_rot)
 
-        best_lower = max(best_lower, i_lower)
-        best_upper = min(best_upper, i_upper)
+        # Reverse localization (end)
+        rev_start = start
+        rev_window_o = original_rev_ext[rev_start : rev_start + L + 1]
+        rev_window_c = corrupted_rev_ext[rev_start : rev_start + L + 1]
+        j_rot_rev = localize(rev_window_c, *tag(rev_window_o))
+        if j_rot_rev != -1:
+            j_rot = (L_dash - 1) - ((j_rot_rev + rev_start) % L_dash)
+            best_j = min(best_j, j_rot)
 
-    i_prime = best_lower
-    j_prime = best_upper + (L_dash - L)
-
-    factor = calculate_localize_factor(i_expected, j_expected, i_prime, j_prime)
+    factor = calculate_localize_factor(i_expected, j_expected, best_i, best_j)
     tags1, tags2 = tag(original)
     num_hashes_used = len(tags1) + len(tags2)
 
     print(f"[{case_name}]")
-    print(f"  Message Length = {len(original)}; Corruption Length: {j_expected - i_expected + 1}")
+    print(f"  Message Length = {L}; Corruption Length: {j_expected - i_expected + 1}")
     print(f"  Expected: i = {i_expected}, j = {j_expected}")
-    print(f"  Predicted: i' = {i_prime}, j' = {j_prime}")
+    print(f"  Predicted: i' = {best_i}, j' = {best_j}")
     print(f"  Localization Factor: {factor:.2f}; Hashes Used: {num_hashes_used}")
 
 def run_inline_tests():

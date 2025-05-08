@@ -31,7 +31,7 @@ def calculate_localize_factor(i: int, j: int, i_prime: int, j_prime: int) -> flo
     predicted_range = j_prime - i_prime + 1
     if predicted_range == 0:
         return float('inf') # Avoid division by zero
-    return true_range / predicted_range
+    return abs(true_range / predicted_range)
 
 def evaluate_case(original: str, corrupted: str, case_name: str):
     """
@@ -60,28 +60,23 @@ def evaluate_case(original: str, corrupted: str, case_name: str):
     num_hashes_used = len(tags1_start) + len(tags2_start)
 
     print(f"[{case_name}]")
+    print(f"  Message Length = {len(original)}; Corruption Length: {j_expected - i_expected + 1}")
     print(f"  Expected: i = {i_expected}, j = {j_expected}")
     print(f"  Predicted: i' = {i_prime}, j' = {j_prime}")
     print(f"  Localization Factor: {factor:.2f}; Hashes Used: {num_hashes_used}")
 
 def run_inline_tests():
     test_cases = [
-        # (original, corrupted)
-        ("a" * 64, "a" * 32 + "X" * 5 + "a" * 32),
-        ("abcdef" * 20, "abcdef" * 10 + "INSERTEDTEXT" + "abcdef" * 10),
-        ("The quick brown fox jumps over the lazy dog",
-         "The quick brown fox jumps INSERTED over the lazy dog"),
-        ("abcdefghijklmnopqrstuvwxyz" * 3,
-         "abcdefghijXklmnopqrstuvwxyz" + "abcdefghijklmnopqrstuvwxyz" * 2),
-        ("1234567890" * 10,
-         "1234567890" * 5 + "CORRUPTION" + "1234567890" * 5),
-        ("openai" * 100,
-         "openai" * 70 + "EXTRAEXTRAEXTRA" + "openai" * 30),
-        ("Data structures and algorithms are fun!" * 5,
-         ("Data structures and algorithms are fun!" * 2) +
-         ">>>GLITCH<<<" +
-         ("Data structures and algorithms are fun!" * 3)),
-        # ("z" * 200, "z" * 199 + "Q"),
+        # One insertion in the middle
+        ("abcdefghijabcdefghij", "abcdefghijHELLOabcdefghij"),
+        # One short insertion in middle
+        ("hellotheregeneral", "hello123theregeneral"),
+        # One long insertion in middle
+        ("datastructuresandalgos", "datastructuresINSERTIONandalgos"),
+        # Insertion of special characters
+        ("opensesameopen", "opensesa@@@meopen"),
+        # Numeric insertion
+        ("zipzapzoom", "zip777zapzoom"),
     ]
 
     for i, (original, corrupted) in enumerate(test_cases):
