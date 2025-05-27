@@ -46,20 +46,21 @@ Line 2: The corrupted message (should be strictly longer due to an insertion)
 ## How to Run
 
 ### Option 1: Run predefined inline tests
-```bash
-# In main.py, ensure:
+In main.py, ensure:  
 READ_FROM_TXT = False
 
-# Then run:
+Then run:
+```bash
 python main.py  
 ```
 
 ### Option 2: Run tests from /testcase folder
-```bash
-# In main.py, set:
+
+In main.py, set:  
 READ_FROM_TXT = True
 
-# Then run:
+Then run:
+```bash
 python main.py
 ```
 ### Option 3: Run randomized experiments
