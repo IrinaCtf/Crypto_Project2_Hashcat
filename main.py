@@ -1,74 +1,120 @@
-# main.py
-import hashlib as hl
-from detect import Detective, randCorruptSeq
-from localize import bin_localize
-import statistics
+import os
+from tag import tag
+from localize import localize
 
-def segement_analysis(original_superset, corrupted_superset, level, i,j):
-    diff = 0
-    for m in range(0, len(original_superset[level])):
-        if(original_superset[level][m] != corrupted_superset[level][m]):
-            diff += 1
-    pref_res = diff/len(original_superset[level])
-    act_res = abs(j-i)/len(original_superset[level])
-    final_res = abs(pref_res-act_res)*100
-    print("Analysis by segment on level "+str(level)+"\nWith Actual differences as " +str(round(pref_res,2)) + " Our findings on the difference as "+ str(round(act_res,2)) + "\nLocalization Factor of "+str(round(100-final_res,2))+"%" )  
+# Toggle between inline tests and reading from testcase/*.txt files
+READ_FROM_TXT = False
 
+def find_expected_range(original: str, corrupted: str) -> tuple[int, int]:
+    """
+    Compares original and corrupted strings character-by-character.
+    Returns a tuple: (start_index i, end_index j) of the corrupted range relative to the corrupted message.
+    """
+    start = 0
+    while start < len(original) and start < len(corrupted) and original[start] == corrupted[start]:
+        start += 1
 
+    end = 0
+    while end < len(original) and end < len(corrupted) and original[-1 - end] == corrupted[-1 - end]:
+        end += 1
 
+    return start, len(corrupted) - end - 1
 
+def calculate_localize_factor(i: int, j: int, i_prime: int, j_prime: int) -> float:
+    """
+    Calculates localization accuracy factor: |i - j + 1| / |i' - j' + 1|
+    where (i, j) are the true start and end indices, and (i', j') are the predicted indices.
+    Returns:
+        float: the localization factor (higher is worse; 1 is perfect)
+    """
+    true_range = j - i + 1
+    predicted_range = j_prime - i_prime + 1
+    if predicted_range == 0:
+        return float('inf') # Avoid division by zero
+    return abs(true_range / predicted_range)
 
-def single_index_analysis(og_len, ip,jp, level,prime_list, target):
+def evaluate_case(original: str, corrupted: str, case_name: str):
+    """
+    Run a single corruption detection test using tag and localize on both forward and reverse strings.
+    Print predicted and expected start/end of corruption, localization factor, and hash count.
+    """
+    i_expected, j_expected = find_expected_range(original, corrupted)
 
-    msg_len = og_len // prime_list[level]
-    print("Analysis by index \nActual index "+str(target)+ " Our findings as (" +str(ip*msg_len) + ", "+str(jp*msg_len)+")")
-    loc_beg = abs((ip*msg_len)-target[0])
-    print("Beginning Index Localization factor off by "+str(loc_beg))
-    loc_end = abs((jp*msg_len)-target[1])
-    print("Ending Index Localization factor off by "+str(loc_end))
-    return (loc_beg, loc_end)
+    # Predict i': start of corruption
+    tags1_start, tags2_start = tag(original)
+    i_prime = localize(corrupted[:len(original)], tags1_start, tags2_start)
 
-def main():
-    # Step 1: Open test file and read content
-    with open("test.txt", "r") as file:
-        lines = file.readlines()
-        if len(lines) < 2:
-            print("Test file must have at least two lines: original and corrupted message.")
-            return
-        original_message = lines[0].strip()
-        corrupted_message = lines[1].strip()[:len(original_message)]
+    # Predict j': end of corruption using reversed strings
+    original_rev = original[::-1]
+    corrupted_rev = corrupted[::-1]
+    tags1_end, tags2_end = tag(original_rev)
+    j_prime_rev = localize(corrupted_rev[:len(original)], tags1_end, tags2_end)
+    # print(j_prime_rev)
+    j_prime = len(corrupted) - j_prime_rev - 1 if j_prime_rev != -1 else -1
+    # print(original_rev, corrupted_rev, j_prime_rev, sep = "\n")
 
-    # Step 2: Create Detective instance
-    limit = 2 * len(original_message)
-    hash_func = lambda x: hl.md5(x.encode('ascii')).hexdigest()
-    agent = Detective(limit, hash_func)
+    # Calculate factor
+    factor = calculate_localize_factor(i_expected, j_expected, i_prime, j_prime)
 
-    # Step 3: Get superset hashes
-    
-    original_superset = agent.superSet(original_message)
+    # Total number of hash tags used (both forward and reverse)
+    num_hashes_used = len(tags1_start) + len(tags2_start)
 
-    # Step 4: Get list of primes
-    prime_list = agent.primes()
-    beg_index_list = []
-    end_index_list = []
-    # Step 5: Create a variety of corrupted messages
-    for k in range(0,10):
-        print("ROUND "+str(k))
-        corrupted_message, target = randCorruptSeq(original_message, 5)
-        agent.remember(original_message)
-        # Step 6: Perform binary search and localize
-        
-        i, j, corrupted_text, corrupted_superset,level = bin_localize(agent, corrupted_message, original_superset)
-        print("Start of corruption index i':"+str(i) +"\tEnd of corruption index j':"+str(j))
+    print(f"[{case_name}]")
+    print(f"  Message Length = {len(original)}; Corruption Length: {j_expected - i_expected + 1}")
+    print(f"  Localization Factor: {factor:.2f}; Hashes Used: {num_hashes_used}")
 
-        # Step 7: Analysis TO DO
-        segement_analysis(original_superset, corrupted_superset, i,j,level)
-        idiff, jdiff = single_index_analysis(len(original_message), i,j,level, prime_list, target)
-        beg_index_list.append(idiff)
-        end_index_list.append(jdiff)
+def run_inline_tests():
+    test_cases = [
+        # One insertion in the middle
+        ("abcdefghijabcdefghij", "abcdefghijHELLOabcdefghij"),
+        # One short insertion in middle
+        ("hellotheregeneral", "hello123theregeneral"),
+        # One long insertion in middle
+        ("datastructuresandalgos", "datastructuresINSERTIONandalgos"),
+        # Insertion of special characters
+        ("opensesameopen", "opensesa@@@meopen"),
+        # Numeric insertion
+        ("zipzapzoom", "zip777zapzoom"),
+    ]
 
-    print("Final average beginning localization factor is "+str(statistics.mean(beg_index_list)))
-    print("Final average ending localization factor is "+str(statistics.mean(end_index_list)))
+    for i, (original, corrupted) in enumerate(test_cases):
+        evaluate_case(original, corrupted, f"Inline Test {i+1}")
+
+def run_txt_tests(folder_path="testcase"):
+    if not os.path.exists(folder_path):
+        print(f"Error: folder '{folder_path}' does not exist.")
+        return
+
+    for filename in sorted(os.listdir(folder_path)):
+        if not filename.endswith(".txt"):
+            continue
+
+        filepath = os.path.join(folder_path, filename)
+        try:
+            with open(filepath, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+
+            if len(lines) < 2:
+                print(f"[{filename}] Error: File must contain at least 2 lines (original and corrupted).")
+                continue
+
+            original = lines[0].strip()
+            corrupted = lines[1].strip()
+
+            if len(original) >= len(corrupted):
+                print(f"[{filename}] Error: L >= L'. Only single insertion corruption allowed.")
+                continue
+
+            evaluate_case(original, corrupted, filename)
+
+        except Exception as e:
+            print(f"[{filename}] Error reading file: {e}")
 
 if __name__ == "__main__":
-    main()
+    print(f"READ_FROM_TXT set to {READ_FROM_TXT}. ", end="")
+    if READ_FROM_TXT:
+        print("To run inline tests, set READ_FROM_TXT to False.")
+        run_txt_tests()
+    else:
+        print("To run tests from txt files, set READ_FROM_TXT to True.")
+        run_inline_tests()
