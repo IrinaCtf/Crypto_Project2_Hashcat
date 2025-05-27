@@ -1,5 +1,7 @@
 # Corruption Localization Tool
 
+NYU Tandon, Applied Cryptograph, 2025 Spring Best Final Project
+
 ## Project Structure
 
 ├── experiment.py # Automates randomized corruption experiments and computes statistics.  
